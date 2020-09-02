@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from django.core.exceptions import ValidationError
 from django.db import models
 
 
 class Bulletin(models.Model):
+    """ Объявление """
     name = models.CharField(max_length=200, verbose_name='Название объявления')
     price = models.IntegerField(verbose_name='Цена (в копейках)')
     main_photo = models.TextField(verbose_name='Ссылка на изображение')
@@ -28,19 +28,10 @@ class Bulletin(models.Model):
 
 
 class AdditionalImage(models.Model):
+    """ Доп.изображение для объявления """
     bulletin = models.ForeignKey(Bulletin, on_delete=models.CASCADE,
                                  verbose_name='Объявление', related_name='additionalimages')
     image = models.TextField(verbose_name='Ссылка на изображение')
-
-    def clean(self):
-        b = Bulletin.objects.get(pk=self.bulletin.pk)
-        all_images = b.additionalimages.all()
-        if len(all_images) >= 3:
-            raise ValidationError('Too many images!')
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Дополнительное изображение'
