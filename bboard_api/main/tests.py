@@ -16,6 +16,18 @@ def bulletin_create(**kwargs):
     )
 
 
+def create_bulletins():
+    n_bulletins = random.randint(10, 20)
+    for number in range(n_bulletins):
+        bulletin_create(
+            name=number,
+            price=number,
+            main_photo=number,
+            description=number
+        )
+    return n_bulletins
+
+
 D1 = datetime.strptime('1/1/2008 1:30 PM', '%m/%d/%Y %I:%M %p')
 D2 = datetime.strptime('1/1/2020 4:50 AM', '%m/%d/%Y %I:%M %p')
 
@@ -126,23 +138,11 @@ class BulletinsListViewTests(TestCase):
         self.assertEqual(list(results), list(reversed(desc_results)))
 
 
-class BulletinDetailView(TestCase):
-
-    @staticmethod
-    def create_bulletins():
-        n_bulletins = random.randint(10, 20)
-        for number in range(n_bulletins):
-            bulletin_create(
-                name=number,
-                price=number,
-                main_photo=number,
-                description=number
-            )
-        return n_bulletins
+class BulletinDetailViewTests(TestCase):
 
     def test_necessary_fields(self):
         """ В выдаче только обязательные поля объявления """
-        n_bulletins = self.create_bulletins()
+        n_bulletins = create_bulletins()
         pk = random.randint(10, n_bulletins)
 
         response = self.client.get(reverse('main:bulletin', kwargs={'pk': pk}))
@@ -153,9 +153,48 @@ class BulletinDetailView(TestCase):
 
     def test_all_fields(self):
         """ В выдаче все поля объявления """
-        n_bulletins = self.create_bulletins()
+        n_bulletins = create_bulletins()
         pk = random.randint(10, n_bulletins)
         response = self.client.get(reverse('main:bulletin', kwargs={'pk': pk}) + '?fields')
 
         for field in Bulletin._meta.fields:
             self.assertIn(field.attname, response.data)
+
+
+class BulletinCreateViewTests(TestCase):
+
+    CREATE_PATTERN = {
+        "additionalimages": [],
+        "name": "test_name",
+        "price": 1,
+        "main_photo": "test_name",
+        "description": "test_name",
+    }
+
+    def test_create_bulletin(self):
+        """ Создание объявления """
+        n_bulletins = create_bulletins()
+
+        create_data = dict(**self.CREATE_PATTERN)
+        create_data['additionalimages'] = [{"image": "test_path_to_image"}]
+
+        response = self.client.post(
+            reverse('main:create'),
+            data=create_data,
+            content_type='application/json'
+        )
+        self.assertEqual(response.data['id'], n_bulletins + 1)
+
+    def test_create_bulletin_with_many_photos(self):
+        """ Тест на создание объявления с числом картинок большим валидного """
+        create_data = dict(**self.CREATE_PATTERN)
+        create_data['additionalimages'] = [
+            {"image": "test_path_to_image"} for _ in range(4)
+        ]
+        response = self.client.post(
+            reverse('main:create'),
+            data=create_data,
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Too many images!', response.data['additionalimages'][0])
