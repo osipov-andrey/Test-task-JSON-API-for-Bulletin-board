@@ -14,13 +14,8 @@ class Bulletin(models.Model):
 
     description = models.TextField(max_length=1000, verbose_name='Описание объявления')
 
-    def delete(self, *args, **kwargs):
-        for ai in self.additionalimages.all():
-            ai.delete()
-        super().delete(*args, **kwargs)
-
-    def additional_images(self):
-        return self.additionalimages.all()
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Объявление'

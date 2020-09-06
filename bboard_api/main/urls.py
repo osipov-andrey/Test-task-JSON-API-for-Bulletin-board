@@ -1,11 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
 from .views import *
 
+router = routers.SimpleRouter()
 
-app_name = 'main'
+router.register('bulletins', BulletinCreateView, basename='bulletins')
+
 urlpatterns = [
-    path('api/bulletin/<int:pk>/', BulletinDetailView.as_view(), name='bulletin'),
-    path('api/bulletin/create/', BulletinCreateView.as_view(), name='create'),
-    path('api/bulletins/', BulletinsListView.as_view(), name='bulletins'),
+    path('api/', include((router.urls, 'bulletins'))),
 ]
