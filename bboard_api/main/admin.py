@@ -8,9 +8,7 @@ class AdditionalImageInLine(admin.TabularInline):
 
 
 class BulletinsAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'price', 'date')
-    list_display_links = ('name', )
-    fields = ('name', 'price', 'date', 'description', 'main_photo')
+    model = Bulletin
     inlines = (AdditionalImageInLine, )
 
 

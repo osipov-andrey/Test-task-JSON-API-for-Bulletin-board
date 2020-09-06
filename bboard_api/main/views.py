@@ -1,16 +1,26 @@
-from rest_framework import generics
+from rest_framework import viewsets, mixins
 
 from .serializers import *
 
 
-class BulletinCreateView(generics.CreateAPIView):
-    """ Создать объявление """
-    serializer_class = BulletinCreateSerializer
+class BulletinCreateView(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin):
+    def list(self, request, *args, **kwargs):
+        self.serializer_class = BulletinListSerializer
+        return super(BulletinCreateView, self).list(request, *args, **kwargs)
 
+    def create(self, request, *args, **kwargs):
+        self.serializer_class = BulletinCreateSerializer
+        return super(BulletinCreateView, self).create(request, *args, **kwargs)
 
-class BulletinsListView(generics.ListAPIView):
-    """ Получить все объявления """
-    serializer_class = BulletinListSerializer
+    def retrieve(self, request, *args, **kwargs):
+        """ Настройка сериалайзера по URL-параметрам """
+        params = self.request.query_params
+        if 'fields' in params:
+            self.serializer_class = BulletinFullDetailSerializer
+            return super().retrieve(request, *args, **kwargs)
+
+        self.serializer_class = BulletinDetailSerializer
+        return super().retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         """ Сортировка объявлений по URL-параметрам """
@@ -24,18 +34,3 @@ class BulletinsListView(generics.ListAPIView):
         else:
             queryset = Bulletin.objects.all()
         return queryset
-
-
-class BulletinDetailView(generics.RetrieveAPIView):
-    """ Получить одно объявление """
-    serializer_class = BulletinDetailSerializer
-    queryset = Bulletin.objects.all()
-
-    def dispatch(self, request, *args, **kwargs):
-        """ Настройка сериалайзера по URL-параметрам """
-        response = super().dispatch(request, *args, **kwargs)
-        params = self.request.query_params
-        if 'fields' in params:
-            self.serializer_class = BulletinFullDetailSerializer
-            response = super().dispatch(request, *args, **kwargs)
-        return response
