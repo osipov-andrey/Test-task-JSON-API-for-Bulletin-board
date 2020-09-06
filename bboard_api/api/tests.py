@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from django.test import TestCase
 from django.urls import reverse
 
-from main.models import Bulletin
+from .models import Bulletin
 
 
 def bulletin_create(**kwargs):
@@ -33,10 +33,6 @@ D2 = datetime.strptime('1/1/2020 4:50 AM', '%m/%d/%Y %I:%M %p')
 
 
 def random_date(start, end):
-    """
-    This function will return a random datetime between two datetime
-    objects.
-    """
     delta = end - start
     int_delta = (delta.days * 24 * 60 * 60) + delta.seconds
     random_second = random.randrange(int_delta)
@@ -60,11 +56,11 @@ class BulletinsListViewTests(TestCase):
         """ Получаем объявления по API """
         if url:
             return self.client.get(url)
-        return self.client.get(reverse('main:bulletins'))
+        return self.client.get(reverse('api:bulletins'))
 
     def test_no_bulletins(self):
         """ В БД нет объявлений """
-        response = self.client.get(reverse('main:bulletins'))
+        response = self.client.get(reverse('api:bulletins'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 0)
 
@@ -113,9 +109,9 @@ class BulletinsListViewTests(TestCase):
                 main_photo=number,
                 description=number
             )
-        response = self.client.get(reverse('main:bulletins') + '?sort=name')
+        response = self.client.get(reverse('api:bulletins') + '?sort=name')
         results = response.data['results']
-        desc_response = self.client.get(reverse('main:bulletins') + '?sort=name&desc')
+        desc_response = self.client.get(reverse('api:bulletins') + '?sort=name&desc')
         desc_results = desc_response.data['results']
 
         self.assertEqual(list(reversed(results)), list(desc_results))
@@ -130,9 +126,9 @@ class BulletinsListViewTests(TestCase):
                 date=random_date(D1, D2),
                 description=number
             )
-        response = self.client.get(reverse('main:bulletins') + '?sort=date')
+        response = self.client.get(reverse('api:bulletins') + '?sort=date')
         results = response.data['results']
-        desc_response = self.client.get(reverse('main:bulletins') + '?sort=date&desc')
+        desc_response = self.client.get(reverse('api:bulletins') + '?sort=date&desc')
         desc_results = desc_response.data['results']
 
         self.assertEqual(list(results), list(reversed(desc_results)))
@@ -145,7 +141,7 @@ class BulletinDetailViewTests(TestCase):
         n_bulletins = create_bulletins()
         pk = random.randint(10, n_bulletins)
 
-        response = self.client.get(reverse('main:bulletin', kwargs={'pk': pk}))
+        response = self.client.get(reverse('api:bulletins', kwargs={'pk': pk}))
         self.assertEqual(len(response.data), 3)
         self.assertIn('name', response.data)
         self.assertIn('price', response.data)
@@ -155,7 +151,7 @@ class BulletinDetailViewTests(TestCase):
         """ В выдаче все поля объявления """
         n_bulletins = create_bulletins()
         pk = random.randint(10, n_bulletins)
-        response = self.client.get(reverse('main:bulletin', kwargs={'pk': pk}) + '?fields')
+        response = self.client.get(reverse('api:bulletins', kwargs={'pk': pk}) + '?fields')
 
         for field in Bulletin._meta.fields:
             self.assertIn(field.attname, response.data)
@@ -179,7 +175,7 @@ class BulletinCreateViewTests(TestCase):
         create_data['additionalimages'] = [{"image": "test_path_to_image"}]
 
         response = self.client.post(
-            reverse('main:create'),
+            reverse('api:bulletins'),
             data=create_data,
             content_type='application/json'
         )
@@ -192,7 +188,7 @@ class BulletinCreateViewTests(TestCase):
             {"image": "test_path_to_image"} for _ in range(4)
         ]
         response = self.client.post(
-            reverse('main:create'),
+            reverse('api:bulletins'),
             data=create_data,
             content_type='application/json'
         )

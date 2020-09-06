@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django_cleanup',
     'rest_framework',
 
-    'main',
+    'api',
 ]
 
 REST_FRAMEWORK = {
@@ -115,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

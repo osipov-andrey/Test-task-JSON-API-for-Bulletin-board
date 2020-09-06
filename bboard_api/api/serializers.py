@@ -13,7 +13,6 @@ class AdditionalImageSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class BulletinCreateSerializer(WritableNestedModelSerializer):
-    """ Сериалайзер объявления """
     date = serializers.HiddenField(default=datetime.now())
     additionalimages = AdditionalImageSerializer(many=True, allow_null=True, required=False)
 
@@ -34,14 +33,14 @@ class BulletinCreateSerializer(WritableNestedModelSerializer):
 
 
 class BulletinDetailSerializer(serializers.ModelSerializer):
-    """ Сокращенный сериалайзер для просмотра объявления """
+    """ Shortcut serializer for viewing bulletin """
     class Meta:
         model = Bulletin
         fields = ('name', 'price', 'main_photo')
 
 
 class BulletinFullDetailSerializer(BulletinDetailSerializer):
-    """ Сериалайзер для просмотра объявления со всеми полями """
+    """ Serializer for viewing bulletin with all fields """
     additionalimages = AdditionalImageSerializer(many=True, allow_null=True, required=False)
 
     class Meta:
@@ -50,7 +49,7 @@ class BulletinFullDetailSerializer(BulletinDetailSerializer):
 
 
 class BulletinListSerializer(serializers.ModelSerializer):
-    """ Сериалайзер списка объявлений. Подключена пагинация (В settings.py) """
+    """ Bulletins list serializer. Pagination enabled (in settings.py) """
     class Meta:
         model = Bulletin
         fields = ('name', 'main_photo', 'price')
